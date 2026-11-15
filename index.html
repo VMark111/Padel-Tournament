@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Padel Tournament</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --court:#1d4f91; --court-d:#143a6b; --ball:#d9f24a; --ink:#16202c; --muted:#66727f;
+  --line:#e2e7ee; --bg:#f3f6fa; --card:#fff; --win:#1f8a4c; --lose:#b03a2e; --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 60px}
+header.top{background:var(--court);color:#fff;position:relative;overflow:hidden}
+header.top::after{content:"";position:absolute;inset:auto -40px -60px auto;width:180px;height:180px;border:3px solid rgba(255,255,255,.12);border-radius:50%}
+header.top .wrap{padding:18px 14px 16px;display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;border-radius:50%;background:var(--ball);flex:none;position:relative;box-shadow:inset -4px -4px 0 rgba(0,0,0,.08)}
+.logo::before,.logo::after{content:"";position:absolute;width:34px;height:34px;border:2px solid #fff;border-radius:50%;top:0}
+.logo::before{left:-22px}.logo::after{right:-22px}
+.logo{overflow:hidden}
+h1,h2,h3{font-family:"Barlow Condensed",Inter,sans-serif;letter-spacing:.2px;margin:0}
+h1{font-size:26px;line-height:1.1}
+h2{font-size:22px;margin:22px 0 10px}
+.sub{opacity:.8;font-size:13px}
+.status{margin-left:auto;font-size:12px;opacity:.85;text-align:right}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;background:var(--court);color:#fff}
+.btn:hover{background:var(--court-d)}
+.btn.ball{background:var(--ball);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--court);border:1.5px solid var(--line)}
+.btn.ghost:hover{background:#e9eef6}
+.btn.danger{background:#fff;color:var(--lose);border:1.5px solid #f0c9c4}
+.btn.danger.armed{background:var(--lose);color:#fff}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.list{display:grid;gap:10px;margin-top:14px}
+.tcard{display:flex;align-items:center;gap:12px;cursor:pointer}
+.tcard:hover{border-color:#c6d2e2}
+.tcard .meta{color:var(--muted);font-size:13px}
+.pill{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:99px;background:#e6edf7;color:var(--court)}
+.pill.done{background:#dff3e7;color:var(--win)}
+.bar{height:6px;background:#e6edf7;border-radius:99px;overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:var(--court)}
+label.f{display:block;font-weight:600;font-size:13px;margin:14px 0 6px}
+.hint{color:var(--muted);font-size:12.5px;font-weight:400}
+input.t,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+input.t:focus,select:focus,textarea:focus{outline:none;border-color:var(--court)}
+textarea{min-height:160px;resize:vertical}
+.seg{display:flex;background:#e6edf7;border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 8px;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--court);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{color:var(--lose);font-size:13px;margin-top:10px}
+.tabs{display:flex;gap:4px;margin:16px 0 4px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.tabs button{flex:1;border:0;background:#e6edf7;color:var(--muted);padding:10px;border-radius:10px;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--court);color:#fff}
+.round{margin-top:18px}
+.round h3{font-size:19px;display:flex;align-items:baseline;gap:8px}
+.round h3 .hint{font-family:Inter;font-size:12px}
+.matches{display:grid;gap:10px;margin-top:8px}
+@media(min-width:620px){.matches.two{grid-template-columns:1fr 1fr}}
+.match{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.match .court{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:8px 12px 0}
+.side{display:flex;align-items:center;gap:10px;padding:8px 12px}
+.side+.side{border-top:1px dashed var(--line)}
+.side .names{flex:1;font-weight:500;min-width:0}
+.side.w .names{font-weight:700;color:var(--win)}
+.side.w .names::after{content:" ✓";font-size:12px}
+.score{width:64px;text-align:center;font-weight:700;font-size:18px;border:1.5px solid var(--line);border-radius:10px;padding:6px 4px;background:#f8fafc}
+.score:focus{outline:none;border-color:var(--court);background:#fff}
+.match.played{border-color:#cfe0d6}
+.rest{font-size:12.5px;color:var(--muted);margin-top:6px}
+table.st{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
+table.st th,table.st td{padding:10px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+table.st th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:#f8fafc}
+table.st td.n,table.st th.n{text-align:left;white-space:normal}
+table.st tr:last-child td{border-bottom:0}
+table.st td.pos{width:34px;text-align:center;font-weight:700;color:var(--muted)}
+table.st tr.top1 td.pos{color:#fff;background:var(--court)}
+table.st tr.top2 td.pos,table.st tr.top3 td.pos{color:var(--court)}
+table.st td.big{font-weight:700;font-size:16px}
+.pos-d{color:var(--win)}.neg-d{color:var(--lose)}
+.empty{text-align:center;padding:40px 16px;color:var(--muted)}
+.empty .logo{margin:0 auto 14px;width:54px;height:54px}
+.empty .logo::before,.empty .logo::after{width:54px;height:54px}
+.empty .logo::before{left:-36px}.empty .logo::after{right:-36px}
+.ent{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.ent span{width:26px;color:var(--muted);font-size:13px;text-align:right}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.copybox{width:100%;min-height:200px;margin-top:10px;font-family:ui-monospace,monospace;font-size:12.5px}
+.stepper{display:flex;gap:6px}
+.stepper input{text-align:center;font-weight:700;font-size:17px}
+.stepper button{flex:none;width:44px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-size:20px;font-weight:600;color:var(--court);cursor:pointer}
+.stepper button:disabled{opacity:.35;cursor:default}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:620px){.boxes{grid-template-columns:1fr 1fr 1fr}}
+.box{display:flex;align-items:center;gap:6px}
+.box span{width:20px;text-align:right;color:var(--muted);font-size:12px;flex:none}
+.box input{padding:9px 10px}
+.teams{display:grid;gap:8px}
+@media(min-width:620px){.teams{grid-template-columns:1fr 1fr}}
+.teambox{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px 10px;background:#fafbfd}
+.teambox .tl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--court);margin-bottom:6px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pair input{padding:9px 10px}
+.calc{margin-top:16px;background:#eef3fa;border-radius:12px;padding:12px 14px}
+.calc-h{font-weight:700;color:var(--court)}
+.calc label.f{margin-top:10px;font-size:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.calc-out{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px}
+.calc-out div{background:#fff;border-radius:10px;padding:8px 4px;text-align:center}
+.calc-out b{display:block;font-family:"Barlow Condensed",Inter,sans-serif;font-size:24px;line-height:1.1}
+.calc-out span{font-size:11px;color:var(--muted)}
+.calc-out .hl{background:var(--court);color:#fff}
+.calc-out .hl span{color:rgba(255,255,255,.8)}
+.calc-out .hl b{color:var(--ball)}
+.summary{margin-top:16px;background:var(--court);color:#fff;border-radius:12px;padding:12px 14px;font-size:14px}
+.summary b{font-size:17px;color:var(--ball)}
+.warn{font-size:12.5px;color:#8a5a00;background:#fff4d6;border-radius:8px;padding:6px 10px;margin-top:6px}
+.back{background:none;border:0;color:#fff;font-size:22px;cursor:pointer;padding:0 6px 0 0;line-height:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+"use strict";
+
+/* ---------------- state ---------------- */
+let tours = {};           // id -> tournament
+let backend = "loading";  // loading | cloud | local
+let readOnly = false;
+let db = null;
+let view = { name: "home" };
+let draft = freshDraft();
+function freshDraft(prev){
+  const p = prev || {};
+  return { name: "", format: p.format || "americano", count: p.count || 8, players: [], teamCount: p.teamCount || 4, teams: [],
+    courts: p.courts || 2, legs: p.legs || 1, rounds: "", scoring: p.scoring || "total", total: p.total || 24, auto: p.auto !== false,
+    time: p.time || 120, change: p.change != null ? p.change : 5, spp: p.spp || 30 };
+}
+let ui = { armed: null, err: "", copyText: "" };
+const LS_KEY = "padel-tournaments-v1";
+
+/* ---------------- helpers ---------------- */
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o));
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function toast(msg){ const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 1800); }
+const nameOf = (t, id) => { const e = t.entities.find(x => x.id === id); return e ? e.name : "?"; };
+const sideName = (t, ids) => ids.map(i => nameOf(t, i)).join(" & ");
+const isPlayed = m => m.sa != null && m.sb != null;
+
+/* ---------------- storage ---------------- */
+function loadLocal(){ try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : {}; } catch(e){ return {}; } }
+function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(tours)); } catch(e){} }
+
+const writing = {}, pending = {};
+async function persist(t){
+  t.updatedAt = Date.now();
+  tours[t.id] = t;
+  if (backend !== "cloud"){ saveLocal(); return; }
+  if (writing[t.id]){ pending[t.id] = true; return; }
+  writing[t.id] = true;
+  try { await db.collection("tournaments").doc(t.id).set(clone(tours[t.id])); }
+  catch(e){
+    if (e && e.code === "invalid_argument"){ readOnly = true; toast("View only — you can't change this tournament"); render(); }
+    else if (e && e.code === "quota_exceeded"){ toast("Storage is full — delete an old tournament"); }
+    else if (e && e.code === "unavailable"){ setTimeout(() => persist(tours[t.id]), 800 + Math.random() * 800); }
+    else toast("Couldn't save — check your connection");
+  }
+  writing[t.id] = false;
+  if (pending[t.id]){ pending[t.id] = false; persist(tours[t.id]); }
+}
+async function removeTour(id){
+  delete tours[id];
+  if (backend === "cloud"){ try { await db.collection("tournaments").doc(id).delete(); } catch(e){ toast("Couldn't delete"); } }
+  else saveLocal();
+}
+
+function startLocal(){ backend = "local"; tours = loadLocal(); render(); }
+async function init(){
+  render();
+  if (!window.claude || typeof window.claude.use !== "function"){ startLocal(); return; }
+  try { db = await window.claude.use("db"); } catch(e){ db = null; }
+  if (!db){ startLocal(); return; }
+  backend = "cloud";
+  let gotFirst = false;
+  const timer = setTimeout(() => { if (!gotFirst){ ui.loadNote = "Can't reach saved tournaments yet — still trying…"; render(); } }, 10000);
+  db.collection("tournaments").onSnapshot(snap => {
+    if (!snap.metadata.fromCache){ gotFirst = true; clearTimeout(timer); ui.loadNote = ""; }
+    const next = {};
+    snap.docs.forEach(d => { const v = d.data(); if (v && v.id && Array.isArray(v.entities)) next[d.id] = clone(v); });
+    for (const id in tours){ if (writing[id] || pending[id]) next[id] = tours[id]; }
+    tours = next;
+    render();
+  }, err => {
+    clearTimeout(timer);
+    ui.loadNote = "Cloud storage unavailable — saving on this device only.";
+    startLocal();
+  });
+}
+
+/* ---------------- schedule generation ---------------- */
+const pk = (a, b) => a < b ? a + "|" + b : b + "|" + a;
+
+function genAmericano(t, k){
+  const ids = t.entities.map(e => e.id), n = ids.length;
+  const groups = Math.min(Math.floor(n / 4), Math.max(1, t.courts));
+  const playing = groups * 4;
+  const P = {}, O = {}, B = {};
+  ids.forEach(i => B[i] = 0);
+  let maxRound = 0; const roundSets = {};
+  t.matches.forEach(m => {
+    maxRound = Math.max(maxRound, m.round);
+    (roundSets[m.round] = roundSets[m.round] || new Set());
+    [...m.a, ...m.b].forEach(i => roundSets[m.round].add(i));
+    P[pk(m.a[0], m.a[1])] = (P[pk(m.a[0], m.a[1])] || 0) + 1;
+    P[pk(m.b[0], m.b[1])] = (P[pk(m.b[0], m.b[1])] || 0) + 1;
+    m.a.forEach(x => m.b.forEach(y => O[pk(x, y)] = (O[pk(x, y)] || 0) + 1));
+  });
+  Object.values(roundSets).forEach(s => ids.forEach(i => { if (!s.has(i)) B[i]++; }));
+
+  const cost = (a, b) => ((P[pk(a[0], a[1])] || 0) + (P[pk(b[0], b[1])] || 0)) * 10 +
+    a.reduce((s, x) => s + b.reduce((s2, y) => s2 + (O[pk(x, y)] || 0), 0), 0);
+
+  const out = [];
+  for (let r = 1; r <= k; r++){
+    const round = maxRound + r;
+    let best = null, bestC = Infinity;
+    for (let trial = 0; trial < 600 && bestC > 0; trial++){
+      const sh = shuffle(ids).sort((x, y) => B[x] - B[y]);   // fewest rests sit out first (random among ties)
+      const sit = sh.slice(0, n - playing);
+      const pl = shuffle(sh.slice(n - playing));
+      let c = 0; const gs = [];
+      for (let g = 0; g < groups; g++){
+        const [w, x, y, z] = pl.slice(g * 4, g * 4 + 4);
+        const opts = [[[w, x], [y, z]], [[w, y], [x, z]], [[w, z], [x, y]]];
+        let bo = null, bc = Infinity;
+        opts.forEach(o => { const cc = cost(o[0], o[1]); if (cc < bc){ bc = cc; bo = o; } });
+        c += bc; gs.push(bo);
+      }
+      if (c < bestC){ bestC = c; best = { gs, sit }; }
+    }
+    best.gs.forEach((g, i) => {
+      out.push({ id: uid(), round, court: i + 1, a: g[0], b: g[1], sa: null, sb: null });
+      P[pk(g[0][0], g[0][1])] = (P[pk(g[0][0], g[0][1])] || 0) + 1;
+      P[pk(g[1][0], g[1][1])] = (P[pk(g[1][0], g[1][1])] || 0) + 1;
+      g[0].forEach(x => g[1].forEach(y => O[pk(x, y)] = (O[pk(x, y)] || 0) + 1));
+    });
+    best.sit.forEach(i => B[i]++);
+  }
+  return out;
+}
+
+function genTeams(t){
+  const ids = shuffle(t.entities.map(e => e.id));
+  if (ids.length % 2) ids.push(null);
+  const m = ids.length, pairsByRound = [];
+  let arr = ids.slice();
+  for (let r = 0; r < m - 1; r++){
+    const pairs = [];
+    for (let i = 0; i < m / 2; i++){ const a = arr[i], b = arr[m - 1 - i]; if (a && b) pairs.push(r % 2 ? [b, a] : [a, b]); }
+    pairsByRound.push(pairs);
+    arr = [arr[0], arr[m - 1], ...arr.slice(1, m - 1)];
+  }
+  const out = []; let round = 0; const courts = Math.max(1, t.courts);
+  const legs = Math.max(1, t.legs || 1), all = [];
+  for (let L = 0; L < legs; L++) pairsByRound.forEach(pairs => all.push(L % 2 ? pairs.map(p => [p[1], p[0]]) : pairs));
+  all.forEach(pairs => {
+    for (let i = 0; i < pairs.length; i += courts){
+      round++;
+      pairs.slice(i, i + courts).forEach((p, j) => out.push({ id: uid(), round, court: j + 1, a: [p[0]], b: [p[1]], sa: null, sb: null }));
+    }
+  });
+  return out;
+}
+
+/* ---------------- standings ---------------- */
+function standings(t){
+  const rows = new Map(t.entities.map(e => [e.id, { id: e.id, name: e.name, p: 0, w: 0, d: 0, l: 0, pf: 0, pa: 0 }]));
+  t.matches.filter(isPlayed).forEach(m => {
+    [[m.a, m.sa, m.sb], [m.b, m.sb, m.sa]].forEach(([ids, own, opp]) => ids.forEach(id => {
+      const r = rows.get(id); if (!r) return;
+      r.p++; r.pf += own; r.pa += opp;
+      if (own > opp) r.w++; else if (own < opp) r.l++; else r.d++;
+    }));
+  });
+  const list = [...rows.values()].map(r => Object.assign(r, { diff: r.pf - r.pa, pts: r.w * 3 + r.d }));
+  if (t.format === "americano") list.sort((a, b) => b.pf - a.pf || b.w - a.w || b.diff - a.diff || a.name.localeCompare(b.name));
+  else list.sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.pf - a.pf || a.name.localeCompare(b.name));
+  return list;
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const app = document.getElementById("app");
+  const ae = document.activeElement;
+  let focus = null;
+  if (ae && ae.dataset && ae.dataset.key && app.contains(ae)){
+    focus = { key: ae.dataset.key, value: ae.value };
+    try { focus.s = ae.selectionStart; focus.e = ae.selectionEnd; } catch(e){}
+  }
+  let html = "";
+  if (view.name === "tour" && !tours[view.id]) view = { name: "home" };
+  if (view.name === "home") html = renderHome();
+  else if (view.name === "new") html = renderNew();
+  else html = renderTour(tours[view.id]);
+  app.innerHTML = html;
+  if (focus){
+    const el = app.querySelector('[data-key="' + focus.key + '"]');
+    if (el){ el.focus(); if (el.value !== focus.value) el.value = focus.value; try { if (focus.s != null) el.setSelectionRange(focus.s, focus.e); } catch(e){} }
+  }
+}
+
+function header(title, sub, back){
+  const st = backend === "cloud" ? "☁︎ Saved to cloud" : backend === "local" ? "Saved on this device" : "Loading…";
+  return `<header class="top"><div class="wrap">
+    ${back ? `<button class="back" data-act="home" aria-label="Back">‹</button>` : `<div class="logo"></div>`}
+    <div style="min-width:0"><h1>${esc(title)}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}</div>
+    <div class="status">${st}${readOnly ? "<br>View only" : ""}</div>
+  </div></header>`;
+}
+
+function renderHome(){
+  const list = Object.values(tours).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  let body = "";
+  if (backend === "loading") body = `<div class="empty">Loading tournaments…</div>`;
+  else if (!list.length) body = `<div class="empty card" style="margin-top:16px"><div class="logo"></div><h2 style="margin:0 0 6px">No tournaments yet</h2>Create one, add players, and the app builds the schedule for you.</div>`;
+  else body = `<div class="list">` + list.map(t => {
+    const played = t.matches.filter(isPlayed).length, total = t.matches.length;
+    const pct = total ? Math.round(played / total * 100) : 0;
+    const done = total && played === total;
+    return `<div class="card tcard" data-act="open" data-id="${t.id}">
+      <div style="flex:1;min-width:0">
+        <div class="row" style="gap:8px"><strong style="font-size:16px">${esc(t.name)}</strong>
+        <span class="pill ${done ? "done" : ""}">${done ? "Finished" : t.format === "americano" ? "Americano" : "Teams"}</span></div>
+        <div class="meta">${t.entities.length} ${t.format === "americano" ? "players" : "teams"} · ${played}/${total} matches · ${new Date(t.createdAt).toLocaleDateString()}</div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+      </div><div style="font-size:22px;color:var(--muted)">›</div></div>`;
+  }).join("") + `</div>`;
+  return header("Padel Tournaments", "Schedule · scores · standings") + `<div class="wrap">
+    ${ui.loadNote ? `<div class="err" style="margin-top:12px">${esc(ui.loadNote)}</div>` : ""}
+    <div class="row" style="margin-top:16px"><button class="btn ball" data-act="new" ${readOnly ? "disabled" : ""}>+ New tournament</button></div>
+    ${body}</div>`;
+}
+
+/* ---------- time / points planner ---------- */
+const num = (v, def) => { const n = parseFloat(v); return Number.isFinite(n) ? n : def; };
+const defaultRounds = n => Math.max(1, Math.min(n - 1, 12));
+function plan(d){
+  const am = d.format === "americano";
+  const n = am ? d.count : d.teamCount;
+  const courts = Math.max(1, Math.floor(num(d.courts, 1)));
+  let rounds, eff, matches;
+  if (am){
+    eff = Math.max(1, Math.min(courts, Math.floor(n / 4)));
+    rounds = Math.max(1, Math.floor(num(d.rounds, 0)) || defaultRounds(n));
+    matches = rounds * eff;
+  } else {
+    const m = n % 2 ? n + 1 : n, perCircle = Math.floor(n / 2);
+    eff = Math.max(1, Math.min(courts, perCircle));
+    const legs = Math.max(1, Math.floor(num(d.legs, 1)));
+    rounds = legs * (m - 1) * Math.ceil(perCircle / eff);
+    matches = legs * n * (n - 1) / 2;
+  }
+  const time = Math.max(1, num(d.time, 120)), change = Math.max(0, num(d.change, 5)), spp = Math.max(5, num(d.spp, 30));
+  const perRound = time / rounds, play = perRound - change;
+  let pts = Math.floor(play * 60 / spp); pts -= pts % 2;           // even total so both sides serve equally
+  const games = Math.max(1, Math.floor(play / 4.5));                 // ~4.5 min per game
+  const sitOut = am ? n - eff * 4 : (n % 2 ? 1 : 0);
+  return { n, rounds, eff, courts, matches, perRound, play, pts, games, sitOut, unusedCourts: courts - eff, time };
+}
+function fmtMin(m){ return m >= 10 ? Math.round(m) + " min" : (Math.round(m * 2) / 2) + " min"; }
+
+function namesFromDraft(d){
+  if (d.format === "americano"){
+    return Array.from({ length: d.count }, (_, i) => (d.players[i] || "").trim() || "Player " + (i + 1));
+  }
+  return Array.from({ length: d.teamCount }, (_, i) => {
+    const t = d.teams[i] || ["", ""], a = (t[0] || "").trim(), b = (t[1] || "").trim();
+    return a && b ? a + " / " + b : a || b || "Team " + (i + 1);
+  });
+}
+
+function stepper(label, field, val, min, max){
+  return `<div><label class="f">${label}</label><div class="stepper">
+    <button type="button" data-act="step" data-f="${field}" data-d="-1" ${val <= min ? "disabled" : ""}>−</button>
+    <input class="t" type="number" inputmode="numeric" min="${min}" max="${max}" data-key="d-${field}" data-draft="${field}" value="${esc(val)}">
+    <button type="button" data-act="step" data-f="${field}" data-d="1" ${val >= max ? "disabled" : ""}>+</button></div></div>`;
+}
+
+function renderNew(){
+  const d = draft, am = d.format === "americano";
+  const p = plan(d);
+  if (d.scoring === "total" && d.auto && p.pts >= 2) d.total = p.pts;
+  const boxes = am
+    ? `<div class="boxes">${Array.from({ length: d.count }, (_, i) =>
+        `<div class="box"><span>${i + 1}</span><input class="t" data-key="pl-${i}" data-pl="${i}" value="${esc(d.players[i] || "")}" placeholder="Player ${i + 1}"></div>`).join("")}</div>`
+    : `<div class="teams">${Array.from({ length: d.teamCount }, (_, i) => { const t = d.teams[i] || ["", ""]; return `
+        <div class="teambox"><div class="tl">Team ${i + 1}</div><div class="pair">
+          <input class="t" data-key="tm-${i}-0" data-tm="${i}" data-tp="0" value="${esc(t[0])}" placeholder="Player 1">
+          <input class="t" data-key="tm-${i}-1" data-tm="${i}" data-tp="1" value="${esc(t[1])}" placeholder="Player 2">
+        </div></div>`; }).join("")}</div>`;
+  const warn = [];
+  if (p.unusedCourts > 0) warn.push(`Only ${p.eff} court${p.eff > 1 ? "s" : ""} can be used with ${p.n} ${am ? "players" : "teams"}.`);
+  if (p.sitOut > 0) warn.push(am ? `${p.sitOut} player${p.sitOut > 1 ? "s" : ""} rest each round (rotates fairly).` : `One team rests each round (odd number of teams).`);
+  if (p.play < 6) warn.push(`Not enough time: under 6 min of play per round. Add time${am ? ", fewer rounds" : ""} or more courts.`);
+  const calc = `<div class="calc">
+    <div class="calc-h">⏱ Time planner</div>
+    <div class="grid3">
+      <div><label class="f">Total time, min</label><input class="t" type="number" inputmode="numeric" min="10" data-key="d-time" data-draft="time" value="${esc(d.time)}"></div>
+      <div><label class="f">Break, min</label><input class="t" type="number" inputmode="numeric" min="0" data-key="d-change" data-draft="change" value="${esc(d.change)}"></div>
+      <div><label class="f">Sec / point</label><input class="t" type="number" inputmode="numeric" min="5" data-key="d-spp" data-draft="spp" value="${esc(d.spp)}"></div>
+    </div>
+    <div class="calc-out">
+      <div><b>${p.rounds}</b><span>rounds</span></div>
+      <div><b>${p.matches}</b><span>matches</span></div>
+      <div><b>${Math.round(p.perRound * 10) / 10}</b><span>min / round</span></div>
+      <div class="hl"><b>${p.pts >= 2 ? p.pts : "–"}</b><span>points / match</span></div>
+    </div>
+    <div class="hint">${fmtMin(Math.max(0, p.play))} of play + ${fmtMin(num(d.change, 5))} break per round on ${p.eff} court${p.eff > 1 ? "s" : ""}. If you count games instead: about ${p.games} games per match (~4.5 min each).</div>
+    ${warn.map(w => `<div class="warn">${esc(w)}</div>`).join("")}
+  </div>`;
+  return header("New tournament", "", true) + `<div class="wrap"><div class="card" style="margin-top:16px">
+    <label class="f">Name</label>
+    <input class="t" data-key="d-name" data-draft="name" value="${esc(d.name)}" placeholder="Friday Night Padel">
+    <label class="f">Format</label>
+    <div class="seg">
+      <button type="button" class="${am ? "on" : ""}" data-act="fmt" data-v="americano">Americano<br><span class="hint">rotating partners, individual ranking</span></button>
+      <button type="button" class="${!am ? "on" : ""}" data-act="fmt" data-v="teams">Fixed teams<br><span class="hint">pairs play round-robin</span></button>
+    </div>
+    <div class="grid2">
+      ${am ? stepper("Number of players", "count", d.count, 4, 40) : stepper("Number of teams", "teamCount", d.teamCount, 2, 24)}
+      ${stepper("Courts", "courts", d.courts, 1, 20)}
+    </div>
+    ${am ? "" : `<div class="grid2">${stepper("Times vs each opponent", "legs", d.legs, 1, 4)}<div class="hint" style="align-self:end;padding-bottom:12px">${d.legs == 1 ? "Single round-robin: every pair meets once." : d.legs == 2 ? "Double round-robin: every pair meets twice." : "Every pair meets " + d.legs + " times."}</div></div>`}
+    <label class="f">${am ? "Players" : "Teams"} <span class="hint">— empty boxes get a default name</span></label>
+    ${boxes}
+    ${am ? `<label class="f">Rounds <span class="hint">(blank = ${defaultRounds(d.count)}, everyone partners with as many others as possible)</span></label><input class="t" type="number" min="1" max="40" inputmode="numeric" data-key="d-rounds" data-draft="rounds" value="${esc(d.rounds)}" placeholder="${defaultRounds(d.count)}">` : ""}
+    <label class="f">Scoring</label>
+    <div class="seg">
+      <button type="button" class="${d.scoring === "total" ? "on" : ""}" data-act="scoring" data-v="total">Fixed points per match<br><span class="hint">e.g. play to 24 total</span></button>
+      <button type="button" class="${d.scoring === "free" ? "on" : ""}" data-act="scoring" data-v="free">Free score<br><span class="hint">games, e.g. 6–4</span></button>
+    </div>
+    ${calc}
+    ${d.scoring === "total" ? `<label class="f">Points per match <span class="hint">${d.auto ? "— calculated from time" : "— set manually"}</span></label>
+      <div class="row" style="flex-wrap:nowrap"><input class="t" type="number" min="2" max="99" inputmode="numeric" data-key="d-total" data-draft="total" value="${esc(d.total)}" ${d.auto ? "readonly" : ""} style="${d.auto ? "background:#f3f6fa" : ""}">
+      <button type="button" class="btn ghost sm" data-act="auto" style="white-space:nowrap">${d.auto ? "Set manually" : "Use calculated"}</button></div>` : ""}
+    <div class="summary">🎾 <b>${d.scoring === "total" ? "Play each match to " + esc(d.total) + " points" : "Play each match to about " + p.games + " games (~" + (p.pts >= 2 ? p.pts : "–") + " points)"}</b><br>${p.rounds} rounds × ${Math.round(p.perRound * 10) / 10} min on ${p.eff} court${p.eff > 1 ? "s" : ""} = ${p.time} min</div>
+    ${ui.err ? `<div class="err">${esc(ui.err)}</div>` : ""}
+    <div class="row" style="margin-top:14px"><button class="btn ball" data-act="create">Create & build schedule</button><button class="btn ghost" data-act="home">Cancel</button></div>
+  </div></div>`;
+}
+
+function renderTour(t){
+  const tab = view.tab || "matches";
+  const played = t.matches.filter(isPlayed).length;
+  const sub = `${t.format === "americano" ? "Americano" : "Fixed teams"} · ${t.entities.length} ${t.format === "americano" ? "players" : "teams"} · ${played}/${t.matches.length} played`;
+  let body = "";
+  if (tab === "matches") body = renderMatches(t);
+  else if (tab === "standings") body = renderStandings(t);
+  else body = renderSettings(t);
+  return header(t.name, sub, true) + `<div class="wrap">
+    <div class="tabs">
+      <button class="${tab === "matches" ? "on" : ""}" data-act="tab" data-v="matches">Matches</button>
+      <button class="${tab === "standings" ? "on" : ""}" data-act="tab" data-v="standings">Standings</button>
+      <button class="${tab === "settings" ? "on" : ""}" data-act="tab" data-v="settings">${t.format === "americano" ? "Players" : "Teams"}</button>
+    </div>${body}</div>`;
+}
+
+function renderMatches(t){
+  const rounds = {};
+  t.matches.forEach(m => (rounds[m.round] = rounds[m.round] || []).push(m));
+  const keys = Object.keys(rounds).map(Number).sort((a, b) => a - b);
+  if (!keys.length) return `<div class="empty">No matches scheduled.</div>`;
+  const ph = t.scoring.mode === "total" ? `to ${t.scoring.total}` : "";
+  return keys.map(r => {
+    const ms = rounds[r].sort((a, b) => a.court - b.court);
+    const inRound = new Set(); ms.forEach(m => [...m.a, ...m.b].forEach(i => inRound.add(i)));
+    const resting = t.entities.filter(e => !inRound.has(e.id)).map(e => e.name);
+    const done = ms.every(isPlayed);
+    const when = t.plan ? `<span class="hint">min ${Math.round((r - 1) * t.plan.perRound)}–${Math.round(r * t.plan.perRound)}</span>` : "";
+    return `<div class="round"><h3>Round ${r} ${when} ${done ? `<span class="pill done">done</span>` : ""}</h3>
+      <div class="matches ${ms.length > 1 ? "two" : ""}">${ms.map(m => {
+        const p = isPlayed(m), aw = p && m.sa > m.sb, bw = p && m.sb > m.sa;
+        return `<div class="match ${p ? "played" : ""}">
+          <div class="court">Court ${m.court}${ph ? " · " + ph : ""}</div>
+          <div class="side ${aw ? "w" : ""}"><span class="names">${esc(sideName(t, m.a))}</span>
+            <input class="score" type="number" min="0" inputmode="numeric" data-key="s-${m.id}-a" data-m="${m.id}" data-s="a" value="${m.sa == null ? "" : m.sa}" ${readOnly ? "disabled" : ""} aria-label="Score"></div>
+          <div class="side ${bw ? "w" : ""}"><span class="names">${esc(sideName(t, m.b))}</span>
+            <input class="score" type="number" min="0" inputmode="numeric" data-key="s-${m.id}-b" data-m="${m.id}" data-s="b" value="${m.sb == null ? "" : m.sb}" ${readOnly ? "disabled" : ""} aria-label="Score"></div>
+        </div>`;
+      }).join("")}</div>
+      ${resting.length ? `<div class="rest">Resting: ${esc(resting.join(", "))}</div>` : ""}
+    </div>`;
+  }).join("") + (t.format === "americano" && !readOnly ? `<div class="row" style="margin-top:18px"><button class="btn ghost" data-act="addround">+ Add a round</button></div>` : "");
+}
+
+function renderStandings(t){
+  const rows = standings(t), am = t.format === "americano";
+  const head = am
+    ? `<th></th><th class="n">Player</th><th>Pts</th><th>P</th><th>W</th><th>+/-</th>`
+    : `<th></th><th class="n">Team</th><th>Pts</th><th>P</th><th>W-D-L</th><th>Games</th><th>+/-</th>`;
+  const body = rows.map((r, i) => {
+    const d = `<span class="${r.diff > 0 ? "pos-d" : r.diff < 0 ? "neg-d" : ""}">${r.diff > 0 ? "+" : ""}${r.diff}</span>`;
+    return `<tr class="top${i + 1}"><td class="pos">${i + 1}</td><td class="n">${esc(r.name)}</td>` + (am
+      ? `<td class="big">${r.pf}</td><td>${r.p}</td><td>${r.w}</td><td>${d}</td>`
+      : `<td class="big">${r.pts}</td><td>${r.p}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.pf}:${r.pa}</td><td>${d}</td>`) + `</tr>`;
+  }).join("");
+  return `<table class="st" style="margin-top:10px"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+    <div class="hint" style="margin-top:8px">${am ? "Ranked by total points won, then wins, then point difference." : "3 pts per win, 1 per draw. Ties broken by game difference, then games won."}</div>
+    <div class="row" style="margin-top:16px"><button class="btn ghost" data-act="copy">Copy results as text</button></div>
+    ${ui.copyText ? `<textarea class="copybox" readonly>${esc(ui.copyText)}</textarea>` : ""}`;
+}
+
+function renderSettings(t){
+  const anyScore = t.matches.some(m => m.sa != null || m.sb != null);
+  return `<div class="card" style="margin-top:10px">
+    <h3 style="font-size:18px;margin-bottom:10px">${t.format === "americano" ? "Players" : "Teams"} <span class="hint" style="font-family:Inter">— edit a name to rename everywhere</span></h3>
+    ${t.entities.map((e, i) => `<div class="ent"><span>${i + 1}</span><input class="t" data-key="e-${e.id}" data-ent="${e.id}" value="${esc(e.name)}" ${readOnly ? "disabled" : ""}></div>`).join("")}
+  </div>
+  <div class="card" style="margin-top:12px">
+    <h3 style="font-size:18px">Tournament</h3>
+    <label class="f">Name</label><input class="t" data-key="t-name" data-tname="1" value="${esc(t.name)}" ${readOnly ? "disabled" : ""}>
+    <div class="hint" style="margin-top:10px">Courts: ${t.courts} · Scoring: ${t.scoring.mode === "total" ? t.scoring.total + " points per match" : "free score"}${t.format === "teams" && (t.legs || 1) > 1 ? ` · Each pair meets ${t.legs}×` : ""}${t.plan ? ` · Planned: ${t.plan.time} min, ~${fmtMin(t.plan.perRound)} per round` : ""}</div>
+    ${readOnly ? "" : `<div class="row" style="margin-top:16px">
+      <button class="btn ghost ${ui.armed === "regen" ? "danger armed" : ""}" data-act="regen">${ui.armed === "regen" ? (anyScore ? "Tap again — this clears all scores" : "Tap again to reshuffle") : "Reshuffle schedule"}</button>
+      <button class="btn danger ${ui.armed === "del" ? "armed" : ""}" data-act="del">${ui.armed === "del" ? "Tap again to delete" : "Delete tournament"}</button>
+    </div>`}
+  </div>`;
+}
+
+/* ---------------- actions ---------------- */
+function copyText(t){
+  const rows = standings(t), am = t.format === "americano";
+  let s = `🎾 ${t.name}\n\nSTANDINGS\n`;
+  rows.forEach((r, i) => { s += am ? `${i + 1}. ${r.name} — ${r.pf} pts (W${r.w}, ${r.diff >= 0 ? "+" : ""}${r.diff})\n` : `${i + 1}. ${r.name} — ${r.pts} pts (${r.w}-${r.d}-${r.l}, ${r.diff >= 0 ? "+" : ""}${r.diff})\n`; });
+  s += `\nRESULTS\n`;
+  const rounds = {}; t.matches.forEach(m => (rounds[m.round] = rounds[m.round] || []).push(m));
+  Object.keys(rounds).map(Number).sort((a, b) => a - b).forEach(r => {
+    s += `Round ${r}\n`;
+    rounds[r].sort((a, b) => a.court - b.court).forEach(m => {
+      s += `  ${sideName(t, m.a)} ${isPlayed(m) ? m.sa + "–" + m.sb : "vs"} ${sideName(t, m.b)}\n`;
+    });
+  });
+  return s;
+}
+
+function create(){
+  const d = draft, am = d.format === "americano";
+  const names = namesFromDraft(d);
+  const courts = Math.max(1, parseInt(d.courts, 10) || 1);
+  if (new Set(names.map(n => n.toLowerCase())).size !== names.length){ ui.err = "Each name must be unique."; return render(); }
+  const p = plan(d);
+  const total = Math.max(2, parseInt(d.total, 10) || 24);
+  const t = {
+    id: uid(), name: d.name.trim() || (am ? "Americano" : "Padel tournament") + " " + new Date().toLocaleDateString(),
+    format: d.format, courts, legs: am ? 1 : Math.max(1, parseInt(d.legs, 10) || 1), scoring: { mode: d.scoring, total },
+    plan: { time: p.time, perRound: p.perRound, change: num(d.change, 5), games: p.games },
+    entities: names.map(n => ({ id: uid(), name: n })), matches: [], createdAt: Date.now()
+  };
+  if (am) t.matches = genAmericano(t, Math.min(40, p.rounds));
+  else t.matches = genTeams(t);
+  ui.err = "";
+  draft = freshDraft(d);
+  view = { name: "tour", id: t.id, tab: "matches" };
+  persist(t); render();
+}
+
+function saveScore(input){
+  const t = tours[view.id]; if (!t) return;
+  const m = t.matches.find(x => x.id === input.dataset.m); if (!m) return;
+  const card = input.closest(".match");
+  const ia = card.querySelector('[data-s="a"]'), ib = card.querySelector('[data-s="b"]');
+  let a = ia.value.trim() === "" ? null : Math.max(0, parseInt(ia.value, 10));
+  let b = ib.value.trim() === "" ? null : Math.max(0, parseInt(ib.value, 10));
+  if (Number.isNaN(a)) a = null; if (Number.isNaN(b)) b = null;
+  if (t.scoring.mode === "total"){
+    const T = t.scoring.total;
+    if (input.dataset.s === "a" && a != null){ a = Math.min(a, T); b = T - a; }
+    else if (input.dataset.s === "b" && b != null){ b = Math.min(b, T); a = T - b; }
+    else if (a == null || b == null){ a = null; b = null; }
+  }
+  if (a === m.sa && b === m.sb) return;
+  m.sa = a; m.sb = b;
+  persist(t); setTimeout(render, 0);
+}
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act, t = tours[view.id];
+  if (act !== "regen" && act !== "del") ui.armed = null;
+  if (act === "home"){ view = { name: "home" }; ui.err = ""; ui.copyText = ""; }
+  else if (act === "new"){ view = { name: "new" }; }
+  else if (act === "open"){ view = { name: "tour", id: el.dataset.id, tab: "matches" }; ui.copyText = ""; }
+  else if (act === "fmt"){ draft.format = el.dataset.v;  }
+  else if (act === "scoring"){ draft.scoring = el.dataset.v; }
+  else if (act === "step"){
+    const f = el.dataset.f, lim = { count: [4, 40], teamCount: [2, 24], courts: [1, 20], legs: [1, 4] }[f];
+    draft[f] = Math.max(lim[0], Math.min(lim[1], (parseInt(draft[f], 10) || lim[0]) + parseInt(el.dataset.d, 10)));
+  }
+  else if (act === "auto"){ draft.auto = !draft.auto; }
+  else if (act === "create"){ return create(); }
+  else if (act === "tab"){ view.tab = el.dataset.v; ui.copyText = ""; }
+  else if (act === "addround" && t){ t.matches = t.matches.concat(genAmericano(t, 1)); persist(t); toast("Round added"); }
+  else if (act === "regen" && t){
+    if (ui.armed !== "regen"){ ui.armed = "regen"; }
+    else { ui.armed = null; const rounds = new Set(t.matches.map(m => m.round)).size || 1; t.matches = []; t.matches = t.format === "americano" ? genAmericano(t, rounds) : genTeams(t); persist(t); view.tab = "matches"; toast("New schedule built"); }
+  }
+  else if (act === "del" && t){
+    if (ui.armed !== "del"){ ui.armed = "del"; }
+    else { ui.armed = null; removeTour(t.id); view = { name: "home" }; toast("Tournament deleted"); }
+  }
+  else if (act === "copy" && t){
+    const text = copyText(t);
+    const done = () => toast("Results copied");
+    try { navigator.clipboard.writeText(text).then(done, () => { ui.copyText = text; render(); }); }
+    catch(err){ ui.copyText = text; }
+  }
+  render();
+});
+
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.pl != null){ draft.players[+el.dataset.pl] = el.value; return; }
+  if (el.dataset.tm != null){ const i = +el.dataset.tm; draft.teams[i] = draft.teams[i] || ["", ""]; draft.teams[i][+el.dataset.tp] = el.value; return; }
+  if (el.dataset.draft){
+    const f = el.dataset.draft;
+    if (f === "count" || f === "teamCount" || f === "courts" || f === "legs"){
+      const v = parseInt(el.value, 10);
+      if (Number.isNaN(v)) return;                       // let them finish typing
+      const lim = { count: [4, 40], teamCount: [2, 24], courts: [1, 20], legs: [1, 4] }[f];
+      draft[f] = Math.max(lim[0], Math.min(lim[1], v));
+    } else draft[f] = el.value;
+    if (f !== "name") render();                          // live-update the planner
+    return;
+  }
+  if (el.dataset.m){
+    const t = tours[view.id]; if (!t || t.scoring.mode !== "total") return;
+    const T = t.scoring.total, card = el.closest(".match");
+    const other = card.querySelector('[data-s="' + (el.dataset.s === "a" ? "b" : "a") + '"]');
+    const v = parseInt(el.value, 10);
+    if (!Number.isNaN(v) && v >= 0 && v <= T) other.value = T - v;
+  }
+});
+
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.m) return;
+  const t = tours[view.id]; if (!t) return;
+  if (el.dataset.ent){ const ent = t.entities.find(x => x.id === el.dataset.ent); const v = el.value.trim(); if (ent && v && v !== ent.name){ ent.name = v; persist(t); render(); } }
+  if (el.dataset.tname){ const v = el.value.trim(); if (v && v !== t.name){ t.name = v; persist(t); render(); } }
+});
+
+document.addEventListener("focusout", e => {
+  if (e.target.dataset && e.target.dataset.m && e.target.isConnected) saveScore(e.target);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("score")){
+    e.preventDefault();
+    const all = [...document.querySelectorAll(".score:not([disabled])")];
+    const i = all.indexOf(e.target);
+    saveScore(e.target);
+    const nextKey = all[i + 2] ? all[i + 2].dataset.key : null; // jump to next match
+    if (nextKey){ const n = document.querySelector('[data-key="' + nextKey + '"]'); if (n) n.focus(); } else e.target.blur();
+  }
+});
+
+init();
+})();
+</script>
+</body>
+</html>
