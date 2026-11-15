@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Padel Tournament</title>
+<meta name="theme-color" content="#1d4f91">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Padel">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
 :root{
@@ -128,6 +136,9 @@ table.st td.big{font-weight:700;font-size:16px}
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 (function(){
 "use strict";
@@ -171,9 +182,10 @@ async function persist(t){
   writing[t.id] = true;
   try { await db.collection("tournaments").doc(t.id).set(clone(tours[t.id])); }
   catch(e){
-    if (e && e.code === "invalid_argument"){ readOnly = true; toast("View only — you can't change this tournament"); render(); }
-    else if (e && e.code === "quota_exceeded"){ toast("Storage is full — delete an old tournament"); }
-    else if (e && e.code === "unavailable"){ setTimeout(() => persist(tours[t.id]), 800 + Math.random() * 800); }
+    const code = e && e.code ? String(e.code).replace(/-/g, "_") : "";
+    if (code === "invalid_argument" || code === "permission_denied"){ readOnly = true; toast("View only — you can't change this tournament"); render(); }
+    else if (code === "quota_exceeded" || code === "resource_exhausted"){ toast("Storage is full — delete an old tournament"); }
+    else if (code === "unavailable"){ setTimeout(() => persist(tours[t.id]), 800 + Math.random() * 800); }
     else toast("Couldn't save — check your connection");
   }
   writing[t.id] = false;
@@ -186,10 +198,24 @@ async function removeTour(id){
 }
 
 function startLocal(){ backend = "local"; tours = loadLocal(); render(); }
+async function getDb(){
+  const cfg = window.PADEL_FIREBASE;
+  if (cfg && cfg.apiKey && cfg.projectId && !/^YOUR_/.test(cfg.apiKey) && window.firebase){
+    try {
+      firebase.initializeApp(cfg);
+      const f = firebase.firestore();
+      try { await f.enablePersistence({ synchronizeTabs: true }); } catch(e){}   // keeps working with bad reception
+      return f;
+    } catch(e){ return null; }
+  }
+  if (window.claude && typeof window.claude.use === "function"){
+    try { return await window.claude.use("db"); } catch(e){}
+  }
+  return null;
+}
 async function init(){
   render();
-  if (!window.claude || typeof window.claude.use !== "function"){ startLocal(); return; }
-  try { db = await window.claude.use("db"); } catch(e){ db = null; }
+  db = await getDb();
   if (!db){ startLocal(); return; }
   backend = "cloud";
   let gotFirst = false;
@@ -677,6 +703,7 @@ document.addEventListener("keydown", e => {
 
 init();
 })();
+if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
 </body>
 </html>
